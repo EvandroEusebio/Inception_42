@@ -1,0 +1,34 @@
+services:
+  mariadb:
+    build: requirements/mariadb
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_NAME=${DB_NAME}
+      - MYSQL_USER=${MYSQL_USER}
+    networks:
+      - intranet
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  
+  wordpress:
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    build: requirements/wordpress
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - MARIADB_PORT=${MARIADB_PORT}
+      - ADMIN_USER=${ADMIN_USER}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+    networks:
+      - intranet
+
+networks:
+  intranet:
+    driver: bridge
+      
